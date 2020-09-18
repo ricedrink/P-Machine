@@ -24,30 +24,29 @@ typedef struct instruction{
 void fetchCycle(void);
 void executeCycle(void);
 int base(int L, int base);
-void printStack(int flag);
+void printRegister();
+void printStack();
 void print(int cnt);
 
 struct instruction code[MAX_CODE_LENGTH];
 struct instruction ir;
 
 //global variables: program  counter (PC), base pointer (BP), stack pointer (SP), program counter (PC) and instruction register (IR).
-int pc, sp = MAX_STACK_HEIGHT, bp = sp-1;
+int pc, sp = MAX_STACK_HEIGHT, bp = 999;
 int stack[MAX_STACK_HEIGHT] = {0};
-int flag;
+int flag = 1;
 int r[8] = {0};
 int halt = 1;
 
-//infile, outfile
+//infile pointer
 FILE *fp;
-FILE *ofp;
 
 int main(){
     //count
     int cnt = 0;
-    
-    //open infile and outfile
+
+    //open infile
     fp = fopen("code.txt", "r");
-    ofp = fopen("output.txt", "w");
 
     //if null print error
     if(fp == NULL){
@@ -66,29 +65,25 @@ int main(){
 
     //call our initial printing function named "print".
     print(cnt);
-    cnt = 0;
 
     //print the column headers for the stack tracing
-    if(flag) {
-        printf("\n\nExecution of Program:\n");
-        printf("\nInitial Values\t\t\t\tpc\tbp\tsp\n");
-    }
+    printf("\n\nExecution of Program:\n");
+    printf("\n\t\t\t\tpc\tbp\tsp\nInitial Values\t\t\t%d\t%d\t%d\n", pc, bp, sp);
+    printRegister();
+    printStack();
 
-    fprintf(ofp, "\n\nExecution of Program:\n");
-    fprintf(ofp, "\nInitial Values\t\t\t\tpc\tbp\tsp\n");
-    
-    while(halt == 0){
+    while(halt == 1){
         fetchCycle();
         executeCycle();
 
-        if(flag){
+  /*      if(flag){
             printf("%d\t%d\t%d\t", ir.r, ir.l, ir.m);
             printf("%d\t%d\t%d\t", pc, bp, sp);
-        }
-        fprintf(ofp, "%d\t%d\t%d\t", ir.r, ir.l, ir.m);
-        fprintf(ofp, "%d\t%d\t%d\t", pc, bp, sp);
+        }   */
+        printRegister();
         printStack(flag);
 
+        //end of the program
         if(( (pc == 0) && (bp == 0) && (sp == 0) ))
             halt = 0;
 
@@ -96,14 +91,14 @@ int main(){
 
     //close files and end program
     fclose(fp);
-    fclose(ofp);
+
     return 0;
     }
 
 void fetchCycle(){
         //an instruction is fetched from the “text” segment and placed in the IR register (IR <- text[PC]) and the program counter is incremented by 1 to point to the next instruction to be executed (PC <- PC + 1).
         ir = code[pc];
-        fprintf(ofp, "%d\t", pc);
+        printf("%d  ", pc);
         pc++;
         return;
 }
@@ -112,13 +107,13 @@ void executeCycle(){
     switch(ir.op){
             //LIT   R, 0, MLoads a constant value (literal) M into Register R
             case 1:
-                fprintf(ofp, "lit\t");
+                printf("lit\t");
                 r[ir.r] = ir.m;
                 break;
 
             //RTN 0, 0, 0Returns from a subroutine and restore the caller environment.
             case 2:
-                fprintf(ofp, "rtn\t");
+                printf("rtn\t");
                 sp = bp + 1;
                 bp = stack[sp-2];
                 pc = stack[sp-3];
@@ -126,19 +121,19 @@ void executeCycle(){
 
             //LOD R, L, MLoad value into a selected register from the stack location at offset M from L lexicographical levels up
             case 3:
-                fprintf(ofp, "lod\t");
+                printf("lod\t");
                 r[ir.r] = stack[base(ir.l, bp) - ir.m];
                 break;
 
             //STO R, L, MStore value from a selected register in the stack location at  offset M from L lexicographical levels up
             case 4:
-                fprintf(ofp, "sto\t");
+                printf("sto\t");
                 stack[base(ir.l, bp) - ir.m] = r[ir.r];
                 break;
 
             //CAL 0, L, MCall procedure at code index M (generates new Activation Record and PC <- M)
             case 5:
-                fprintf(ofp, "cal\t");
+                printf("cal\t");
                 stack[sp-1] = base(ir.l, bp);
                 stack[sp-2] = bp;
                 stack[sp-3] = pc;
@@ -148,26 +143,26 @@ void executeCycle(){
 
             //INC  0, 0, MAllocate  M  memory  words  (increment  SP  by  M).  First  three  are  reserved  to Static  Link  (SL),  Dynamic  Link  (DL),and   Return Address (RA)
             case 6:
-                fprintf(ofp, "inc\t");
+                printf("inc\t");
                 sp = sp - ir.m;
                 break;
 
             //JMP 0, 0, MJump to instruction M (PC <- M)
             case 7:
-                fprintf(ofp, "jmp\t");
+                printf("jmp\t");
                 pc = ir.m;
                 break;
 
             //JPC
             case 8:
-                fprintf(ofp, "jpc\t");
+                printf("jpc\t");
                 if(r[ir.r] == 0)
                     pc = ir.m;
                 break;
 
-            //SIO 
+            //SIO
             case 9:
-                fprintf(ofp, "sio\t");
+                printf("sio\t");
                 //print register to screen
                 if(ir.m == 1)
                     printf("\nR[%d] = %d\n", ir.r, r[ir.r]);
@@ -180,52 +175,52 @@ void executeCycle(){
                 else if(ir.m == 3)
                     halt = 0;
                 break;
-            
+
             //NEG
             case 10:
-                fprintf(ofp, "neg\t");
+                printf("neg\t");
                 r[ir.r] = 0 - r[ir.r];
                 break;
 
             //ADD
             case 11:
-                fprintf(ofp, "add\t");
+                printf("add\t");
                 r[ir.r] = r[ir.l] + r[ir.m];
                 break;
 
             //SUB
             case 12:
-                fprintf(ofp, "sub\t");
+                printf("sub\t");
                 r[ir.r] = r[ir.l] - r[ir.m];
                 break;
 
             //MULI
             case 13:
-                fprintf(ofp, "mul\t");
+                printf("mul\t");
                 r[ir.r] = r[ir.l] * r[ir.m];
                 break;
 
             //DIV
             case 14:
-                fprintf(ofp, "div\t");
+                printf("div\t");
                 r[ir.r] = ((r[ir.l])/(r[ir.m]));
                 break;
 
             //ODD
             case 15:
-                fprintf(ofp, "odd\t");
+                printf("odd\t");
                 r[ir.r] = r[ir.r]%2;
                 break;
 
             //MOD
             case 16:
-                fprintf(ofp, "mod\t");
+                printf("mod\t");
                 r[ir.r] = (r[ir.l])%(r[ir.m]);
                 break;
 
             //EQL
             case 17:
-                fprintf(ofp, "eql\t");
+                printf("eql\t");
                 if(r[ir.l] == r[ir.m])
                     r[ir.r] = 1;
                 else
@@ -234,7 +229,7 @@ void executeCycle(){
 
             //NEQ
             case 18:
-                fprintf(ofp, "neq\t");
+                printf("neq\t");
                 if(r[ir.l] != r[ir.m])
                     r[ir.r] = 1;
                 else
@@ -243,7 +238,7 @@ void executeCycle(){
 
             //LSS
             case 19:
-                fprintf(ofp, "lss\t");
+                printf("lss\t");
                 if(r[ir.l] < r[ir.m])
                     r[ir.r] = 1;
                 else
@@ -252,7 +247,7 @@ void executeCycle(){
 
             //LEQ
             case 20:
-                fprintf(ofp, "leq\t");
+                printf("leq\t");
                 if(r[ir.l] <= r[ir.m])
                     r[ir.r] = 1;
                 else
@@ -261,7 +256,7 @@ void executeCycle(){
 
             //GTR
             case 21:
-                fprintf(ofp, "gtr\t");
+                printf("gtr\t");
                 if(r[ir.l] > r[ir.m])
                     r[ir.r] = 1;
                 else
@@ -270,7 +265,7 @@ void executeCycle(){
 
             //GEQ
             case 22:
-                fprintf(ofp, "geq\t");
+                printf("geq\t");
                 if(r[ir.l] >= r[ir.m])
                     r[ir.r] = 1;
                 else
@@ -279,11 +274,13 @@ void executeCycle(){
 
 
             default:
-                fprintf(ofp, "err\t");
+                printf("err\t");
                 return;
 
         }
-        return;   
+        printf("  %d  %d  %d", ir.r, ir.l, ir.m);
+        printf("\t\t%d\t%d\t%d\n", pc, bp, sp);
+        return;
     }
 
 int base(int L, int base){
@@ -296,61 +293,66 @@ int base(int L, int base){
     return b1;
 }
 
-void printStack(int flag){
-    int i;
+void printRegister(){
+    printf("Registers: ");
+    for(int i = 0; i < 8; i++)
+        printf("%d ", r[i]);
+    printf("\n");
+}
+
+void printStack(){
+    printf("Stack: ");
+
     if(bp == 0){
         return;
     }
     else{
 
-        for(i = 1; i <= sp; i++){
+        for(int i = 1; i <= MAX_STACK_HEIGHT - sp; i++){
             if(flag)
-                printf("%d\t", stack[i]);
-            fprintf(ofp, "%d\t", stack[i]);
+                printf("%d ", stack[MAX_STACK_HEIGHT-i]);
         }
-        if(flag)
-            printf("\n");
-        fprintf(ofp, "\n");
+        printf("\n\n");
         return;
     }
 }
 
 void print(int cnt){
     int i;
-    fprintf(ofp, "Interpreted Assembly Language\n");
-    fprintf(ofp, "\nLine\tOP\tR\tL\tM");
+    printf("Interpreted Assembly Language:\n");
+    printf("\nLine\tOP\tR\tL\tM");
     for(i = 0; i < cnt; i++){
         int op = code[i].op;
 
         //Interpret the operation.
         switch(op){
-            case 1: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "lit\t"); break;
-            case 2: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "rtn\t"); break;
-            case 3: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "lod\t"); break;
-            case 4: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "sto\t"); break;
-            case 5: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "cal\t"); break;
-            case 6: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "inc\t"); break;
-            case 7: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "jmp\t"); break;
-            case 8: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "jpc\t"); break;
-            case 9: fprintf(ofp, "\n%d\t", i); fprintf(ofp, "sio\t"); break;
-            case 10:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "neg\t"); break;
-            case 11:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "add\t"); break;
-            case 12:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "sub\t"); break;
-            case 13:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "mul\t"); break;
-            case 14:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "div\t"); break;
-            case 15:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "odd\t"); break;
-            case 16:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "mod\t"); break;
-            case 17:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "eql\t"); break;
-            case 18:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "neq\t"); break;
-            case 19:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "lss\t"); break;
-            case 20:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "leq\t"); break;
-            case 21:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "gtr\t"); break;
-            case 22:fprintf(ofp, "\n%d\t", i); fprintf(ofp, "geq\t"); break;
+            case 1: printf("\n%d\t", i); printf("lit\t"); break;
+            case 2: printf("\n%d\t", i); printf("rtn\t"); break;
+            case 3: printf("\n%d\t", i); printf("lod\t"); break;
+            case 4: printf("\n%d\t", i); printf("sto\t"); break;
+            case 5: printf("\n%d\t", i); printf("cal\t"); break;
+            case 6: printf("\n%d\t", i); printf("inc\t"); break;
+            case 7: printf("\n%d\t", i); printf("jmp\t"); break;
+            case 8: printf("\n%d\t", i); printf("jpc\t"); break;
+            case 9: printf("\n%d\t", i); printf("sio\t"); break;
+            case 10:printf("\n%d\t", i); printf("neg\t"); break;
+            case 11:printf("\n%d\t", i); printf("add\t"); break;
+            case 12:printf("\n%d\t", i); printf("sub\t"); break;
+            case 13:printf("\n%d\t", i); printf("mul\t"); break;
+            case 14:printf("\n%d\t", i); printf("div\t"); break;
+            case 15:printf("\n%d\t", i); printf("odd\t"); break;
+            case 16:printf("\n%d\t", i); printf("mod\t"); break;
+            case 17:printf("\n%d\t", i); printf("eql\t"); break;
+            case 18:printf("\n%d\t", i); printf("neq\t"); break;
+            case 19:printf("\n%d\t", i); printf("lss\t"); break;
+            case 20:printf("\n%d\t", i); printf("leq\t"); break;
+            case 21:printf("\n%d\t", i); printf("gtr\t"); break;
+            case 22:printf("\n%d\t", i); printf("geq\t"); break;
             default: return;
         }
-        fprintf(ofp, "%d\t", code[i].r);
-        fprintf(ofp, "%d\t", code[i].l);
-        fprintf(ofp, "%d\t", code[i].m);
+        printf("%d\t", code[i].r);
+        printf("%d\t", code[i].l);
+        printf("%d\t", code[i].m);
     }
     return;
 }
