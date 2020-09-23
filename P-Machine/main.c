@@ -32,11 +32,11 @@ struct instruction code[MAX_CODE_LENGTH];
 struct instruction ir;
 
 //global variables: program  counter (PC), base pointer (BP), stack pointer (SP), program counter (PC) and instruction register (IR).
-int pc, sp = MAX_STACK_HEIGHT, bp = 999;
+int pc, sp = MAX_STACK_HEIGHT, bp = MAX_STACK_HEIGHT - 1;
 int stack[MAX_STACK_HEIGHT] = {0};
-int flag = 1;
 int r[8] = {0};
 int halt = 1;
+int bars[MAX_CODE_LENGTH] = {0};
 
 //infile pointer
 FILE *fp;
@@ -73,15 +73,11 @@ int main(){
     printStack();
 
     while(halt == 1){
+
         fetchCycle();
         executeCycle();
-
-  /*      if(flag){
-            printf("%d\t%d\t%d\t", ir.r, ir.l, ir.m);
-            printf("%d\t%d\t%d\t", pc, bp, sp);
-        }   */
         printRegister();
-        printStack(flag);
+        printStack();
 
         //end of the program
         if(( (pc == 0) && (bp == 0) && (sp == 0) ))
@@ -144,6 +140,7 @@ void executeCycle(){
             //INC  0, 0, MAllocate  M  memory  words  (increment  SP  by  M).  First  three  are  reserved  to Static  Link  (SL),  Dynamic  Link  (DL),and   Return Address (RA)
             case 6:
                 printf("inc\t");
+                bars[sp] = 1;
                 sp = sp - ir.m;
                 break;
 
@@ -287,7 +284,7 @@ int base(int L, int base){
     int b1; //Find base L levels up
     b1 = base;
     while(L > 0){
-        b1 = stack[b1 + 1];
+        b1 = stack[b1];
         L--;
     }
     return b1;
@@ -303,18 +300,14 @@ void printRegister(){
 void printStack(){
     printf("Stack: ");
 
-    if(bp == 0){
-        return;
+    for(int i = 1; i <= MAX_STACK_HEIGHT - sp; i++){
+        // Print out the bar before printing out the next AR
+        if(MAX_STACK_HEIGHT-i+1!=1000 && bars[MAX_STACK_HEIGHT-i+1])
+            printf("| ");
+        printf("%d ", stack[MAX_STACK_HEIGHT-i]);
     }
-    else{
-
-        for(int i = 1; i <= MAX_STACK_HEIGHT - sp; i++){
-            if(flag)
-                printf("%d ", stack[MAX_STACK_HEIGHT-i]);
-        }
-        printf("\n\n");
-        return;
-    }
+    printf("\n\n");
+    return;
 }
 
 void print(int cnt){
