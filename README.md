@@ -7,8 +7,7 @@ P-Machine is virtual code machine designed to execute p-code.
 
 ```
 1. p-machine:
-  - Go to Terminal/Command Prompt
-  
+  - Open to Terminal/Command Prompt
   - type "gcc p-machine.c" to complile
   - type "./a.out input.txt" to run
   
