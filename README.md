@@ -1,8 +1,14 @@
 # P-Machine
 Made by Weiyi Chen and Alice Zhang for COP3402
 
-# Instructions
-Run program by 
+P-Machine is virtual code machine designed to execute p-code.
+
+# How to use
+
 ```
-$ ./a.out input.txt
+1. p-machine:
+  - Open to Terminal/Command Prompt
+  - type "gcc p-machine.c" to complile
+  - type "./a.out input.txt" to run
+  
 ```
