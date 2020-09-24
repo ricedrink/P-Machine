@@ -41,12 +41,12 @@ int bars[MAX_CODE_LENGTH] = {0};
 //infile pointer
 FILE *fp;
 
-int main(){
+int main(int argc, char* argv []){
     //count
     int cnt = 0;
 
     //open infile
-    fp = fopen("code.txt", "r");
+    fp = fopen(argv[argc-1], "r");
 
     //if null print error
     if(fp == NULL){
