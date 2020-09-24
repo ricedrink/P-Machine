@@ -11,8 +11,7 @@ The P-machine is a stack machine with two memory segments: a data-stack that con
 1. p-machine:
   - Open to Terminal/Command Prompt
   - type "gcc PMachine.c" to complile
-  - type "./a.out INPUT_FILENAME.txt" to run
-    Note: Replace "INPUT_FILENAME" with actual name of the input file
+  - type "./a.out input.txt" to run (replace "input" with actual name of the input file)
   - enter input if needed
   
 ```
