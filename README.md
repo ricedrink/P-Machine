@@ -1,5 +1,5 @@
 # P-Machine
-Made by Weiyi Chen (cwy.sophiechen@gmail.com) and Alice Zhang (alicezhang32092@knights.ucf.edu) for COP3402
+Made by Weiyi Chen (cwy.sophiechen@knights.ucf.edu) and Alice Zhang (alicezhang32092@knights.ucf.edu) for COP3402
 
 This assignment implements a VM P-machine (PM/0) to execute p-code.
 
@@ -10,7 +10,9 @@ The P-machine is a stack machine with two memory segments: a data-stack that con
 ```
 1. p-machine:
   - Open to Terminal/Command Prompt
-  - type "gcc main.c" to complile
-  - type "./a.out input.txt" to run
+  - type "gcc PMachine.c" to complile
+  - type "./a.out INPUT_FILENAME.txt" to run
+    Note: Replace "INPUT_FILENAME" with actual name of the input file
+  - enter input if needed
   
 ```
